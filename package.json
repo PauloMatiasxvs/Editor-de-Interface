@@ -1,0 +1,18 @@
+{
+  "name": "editor-de-interface",
+  "version": "1.0.0",
+  "description": "SocialDash - Um dashboard de mídias sociais com Tailwind CSS",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tailwindcss -i ./src/styles.css -o ./dist/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14"
+  }
+}
