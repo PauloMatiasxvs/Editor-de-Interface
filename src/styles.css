@@ -2,12 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Animação personalizada para fade-in */
+/* Animação de Fade-In */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Animação de Flutuação para Cards */
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.card-float {
+  transition: all 0.3s ease;
+}
+
+.card-float:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px var(--shadow-color);
+  animation: float 1.5s ease-in-out infinite;
+}
+
+/* Estilo para Botões com Gradiente */
+.gradient-btn {
+  background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
+  transition: all 0.3s ease;
+}
+
+.gradient-btn:hover {
+  background: linear-gradient(90deg, var(--accent-hover), var(--accent-color));
 }

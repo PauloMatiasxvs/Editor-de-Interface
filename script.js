@@ -1,10 +1,15 @@
 let posts = JSON.parse(localStorage.getItem('posts')) || [
-  { id: 1, content: "Primeiro post!", media: "https://via.placeholder.com/300", likes: 5, comments: [], date: "2025-03-22" },
-  { id: 2, content: "Vídeo legal!", media: "https://www.w3schools.com/html/mov_bbb.mp4", likes: 3, comments: [], date: "2025-03-21" }
+  { id: 1, content: "Bem-vindo ao SocialDash!", media: "https://via.placeholder.com/300", likes: 5, comments: [], date: "2025-03-22" },
+  { id: 2, content: "Confira esse vídeo!", media: "https://www.w3schools.com/html/mov_bbb.mp4", likes: 3, comments: [], date: "2025-03-21" }
 ];
 
 let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-let settings = JSON.parse(localStorage.getItem('settings')) || { sortBy: 'date-desc' };
+let settings = JSON.parse(localStorage.getItem('settings')) || { 
+  sortBy: 'date-desc', 
+  colorTheme: 'default', 
+  fontSize: 16, 
+  enableAnimations: true 
+};
 
 const postList = document.getElementById('post-list');
 const notifList = document.getElementById('notif-list');
@@ -20,23 +25,51 @@ const editMedia = document.getElementById('edit-media');
 const editMediaPreview = document.getElementById('edit-media-preview');
 const editId = document.getElementById('edit-id');
 const savePostBtn = document.getElementById('save-post');
-const sidebarItems = document.querySelectorAll('.sidebar li');
-const toggleSidebar = document.getElementById('toggle-sidebar');
+const sidebarItems = document.querySelectorAll('aside li');
 const themeSwitch = document.getElementById('theme-switch');
 const feedSection = document.getElementById('feed-section');
 const notificationsSection = document.getElementById('notifications-section');
 const statsSection = document.getElementById('stats-section');
 const settingsSection = document.getElementById('settings-section');
 const sortPosts = document.getElementById('sort-posts');
+const colorTheme = document.getElementById('color-theme');
+const fontSize = document.getElementById('font-size');
+const fontSizeValue = document.getElementById('font-size-value');
+const enableAnimations = document.getElementById('enable-animations');
 const clearPostsBtn = document.getElementById('clear-posts');
 
-const savedTheme = localStorage.getItem('theme') || 'light';
-document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+// Inicializar Tema
+const savedTheme = localStorage.getItem('theme') || 'dark';
+document.body.setAttribute('data-theme', savedTheme);
 themeSwitch.checked = savedTheme === 'dark';
 themeSwitch.addEventListener('change', () => {
-  document.documentElement.classList.toggle('dark');
-  localStorage.setItem('theme', themeSwitch.checked ? 'dark' : 'light');
+  const newTheme = themeSwitch.checked ? 'dark' : 'light';
+  document.body.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
 });
+
+// Inicializar Configurações
+sortPosts.value = settings.sortBy;
+colorTheme.value = settings.colorTheme;
+fontSize.value = settings.fontSize;
+enableAnimations.checked = settings.enableAnimations;
+fontSizeValue.textContent = `${settings.fontSize}px`;
+document.documentElement.style.setProperty('--font-size-base', `${settings.fontSize}px`);
+
+// Aplicar Tema de Cores
+function applyColorTheme(theme) {
+  if (theme === 'blue') {
+    document.documentElement.style.setProperty('--accent-color', '#4a90e2');
+    document.documentElement.style.setProperty('--accent-hover', '#357abd');
+  } else if (theme === 'green') {
+    document.documentElement.style.setProperty('--accent-color', '#2ecc71');
+    document.documentElement.style.setProperty('--accent-hover', '#27ae60');
+  } else {
+    document.documentElement.style.setProperty('--accent-color', '#ff6f61');
+    document.documentElement.style.setProperty('--accent-hover', '#d83f87');
+  }
+}
+applyColorTheme(settings.colorTheme);
 
 function renderPosts() {
   postList.innerHTML = '';
@@ -52,23 +85,26 @@ function renderPosts() {
 
   sortedPosts.forEach(post => {
     const card = document.createElement('div');
-    card.classList.add('bg-white', 'dark:bg-gray-800', 'p-5', 'rounded-lg', 'shadow-lg', 'relative', 'animate-fade-in', 'transition-all', 'duration-300', 'hover:shadow-xl');
+    card.classList.add('card-bg', 'p-6', 'rounded-xl', 'shadow-custom', 'relative', 'animate-fade-in');
+    if (settings.enableAnimations) {
+      card.classList.add('card-float');
+    }
     card.draggable = true;
     card.innerHTML = `
-      <div class="absolute top-3 right-3 flex gap-2">
-        <span class="edit-icon text-blue-500 hover:text-blue-600 cursor-pointer"><i class="fas fa-edit"></i></span>
-        <span class="delete-icon text-red-500 hover:text-red-600 cursor-pointer"><i class="fas fa-trash"></i></span>
+      <div class="absolute top-4 right-4 flex gap-3">
+        <span class="edit-icon text-purple-400 hover:text-purple-300 cursor-pointer"><i class="fas fa-edit"></i></span>
+        <span class="delete-icon text-red-400 hover:text-red-300 cursor-pointer"><i class="fas fa-trash"></i></span>
       </div>
-      <p class="mb-3">${post.content}</p>
-      ${post.media ? (post.media.includes('video') ? `<video src="${post.media}" controls class="w-full rounded-lg mb-3"></video>` : `<img src="${post.media}" alt="Mídia" class="w-full rounded-lg mb-3">`) : ''}
-      <small class="text-gray-500 dark:text-gray-400">${post.date}</small>
-      <div class="flex gap-3 mt-3">
-        <button class="like-btn flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-red-500"><i class="fas fa-heart ${post.liked ? 'text-red-500' : ''}"></i> ${post.likes}</button>
-        <button class="comment-btn flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-blue-500"><i class="fas fa-comment"></i> ${post.comments.length}</button>
+      <p class="mb-4 text-lg">${post.content}</p>
+      ${post.media ? (post.media.includes('video') ? `<video src="${post.media}" controls class="w-full rounded-lg mb-4"></video>` : `<img src="${post.media}" alt="Mídia" class="w-full rounded-lg mb-4">`) : ''}
+      <small class="text-gray-400">${post.date}</small>
+      <div class="flex gap-4 mt-4">
+        <button class="like-btn flex items-center gap-2 text-gray-300 hover:text-red-400"><i class="fas fa-heart ${post.liked ? 'text-red-400' : ''}"></i> ${post.likes}</button>
+        <button class="comment-btn flex items-center gap-2 text-gray-300 hover:text-purple-400"><i class="fas fa-comment"></i> ${post.comments.length}</button>
       </div>
-      <div class="comments mt-3 hidden">
-        <ul class="space-y-2 mb-3">${post.comments.map(c => `<li class="text-sm text-gray-600 dark:text-gray-300">${c}</li>`).join('')}</ul>
-        <input type="text" placeholder="Adicionar comentário..." class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
+      <div class="comments mt-4 hidden">
+        <ul class="space-y-2 mb-4">${post.comments.map(c => `<li class="text-sm text-gray-400">${c}</li>`).join('')}</ul>
+        <input type="text" placeholder="Adicionar comentário..." class="w-full p-3 input-bg rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
       </div>
     `;
 
@@ -116,7 +152,7 @@ postList.addEventListener('drop', () => {
 });
 
 function getDragAfterElement(container, y) {
-  const draggableElements = [...container.querySelectorAll('.bg-white:not(.opacity-50), .dark\\:bg-gray-800:not(.opacity-50)')];
+  const draggableElements = [...container.querySelectorAll('.card-bg:not(.opacity-50)')];
   return draggableElements.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
     const offset = y - box.top - box.height / 2;
@@ -132,7 +168,7 @@ function renderNotifications() {
   notifList.innerHTML = '';
   notifications.forEach((notif, index) => {
     const li = document.createElement('li');
-    li.classList.add('bg-white', 'dark:bg-gray-800', 'p-3', 'rounded-lg', 'shadow-lg', 'animate-fade-in');
+    li.classList.add('card-bg', 'p-4', 'rounded-xl', 'shadow-custom', 'animate-fade-in');
     li.textContent = notif.message;
     notifList.appendChild(li);
     setTimeout(() => {
@@ -175,7 +211,7 @@ function editPost(id) {
   const post = posts.find(p => p.id === id);
   editContent.value = post.content;
   editId.value = id;
-  editMediaPreview.innerHTML = post.media ? (post.media.includes('video') ? `<video src="${post.media}" controls class="w-full rounded-lg mb-3"></video>` : `<img src="${post.media}" alt="Mídia" class="w-full rounded-lg mb-3">`) : '';
+  editMediaPreview.innerHTML = post.media ? (post.media.includes('video') ? `<video src="${post.media}" controls class="w-full rounded-lg mb-4"></video>` : `<img src="${post.media}" alt="Mídia" class="w-full rounded-lg mb-4">`) : '';
   editModal.classList.remove('hidden');
 }
 
@@ -234,15 +270,11 @@ savePostBtn.addEventListener('click', () => {
   renderPosts();
 });
 
-toggleSidebar.addEventListener('click', () => {
-  document.getElementById('sidebar').classList.toggle('w-16');
-  document.getElementById('sidebar').classList.toggle('w-64');
-});
-
 sidebarItems.forEach(item => {
   item.addEventListener('click', () => {
-    sidebarItems.forEach(i => i.classList.remove('active:bg-blue-500', 'active:text-white'));
-    item.classList.add('active:bg-blue-500', 'active:text-white');
+    if (item.querySelector('#theme-switch')) return; // Ignora o item de tema
+    sidebarItems.forEach(i => i.classList.remove('bg-purple-600'));
+    item.classList.add('bg-purple-600');
     feedSection.classList.add('hidden');
     notificationsSection.classList.add('hidden');
     statsSection.classList.add('hidden');
@@ -273,12 +305,15 @@ function updateCharts() {
       datasets: [{
         label: 'Engajamento',
         data: [postsCount, likes, comments],
-        backgroundColor: ['#007bff', '#dc3545', '#28a745']
+        backgroundColor: ['var(--accent-color)', 'var(--accent-hover)', '#28a745']
       }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true }
+      }
     }
   });
 
@@ -290,7 +325,7 @@ function updateCharts() {
       datasets: [{
         label: 'Curtidas por Dia',
         data: posts.map(p => p.likes),
-        borderColor: '#007bff',
+        borderColor: 'var(--accent-color)',
         fill: false
       }]
     },
@@ -301,9 +336,29 @@ function updateCharts() {
   });
 }
 
-sortPosts.value = settings.sortBy;
+// Configurações
 sortPosts.addEventListener('change', () => {
   settings.sortBy = sortPosts.value;
+  localStorage.setItem('settings', JSON.stringify(settings));
+  renderPosts();
+});
+
+colorTheme.addEventListener('change', () => {
+  settings.colorTheme = colorTheme.value;
+  applyColorTheme(settings.colorTheme);
+  localStorage.setItem('settings', JSON.stringify(settings));
+  updateCharts();
+});
+
+fontSize.addEventListener('input', () => {
+  settings.fontSize = fontSize.value;
+  fontSizeValue.textContent = `${settings.fontSize}px`;
+  document.documentElement.style.setProperty('--font-size-base', `${settings.fontSize}px`);
+  localStorage.setItem('settings', JSON.stringify(settings));
+});
+
+enableAnimations.addEventListener('change', () => {
+  settings.enableAnimations = enableAnimations.checked;
   localStorage.setItem('settings', JSON.stringify(settings));
   renderPosts();
 });
